@@ -3,6 +3,8 @@ import Icon from "@/components/ui/icon";
 
 const HERO_IMG   = "https://cdn.poehali.dev/files/0c6c8db3-cd34-4ece-bb1c-ec68d82f1ad5.png";
 
+const HATCH_OPEN_PHOTO = "https://cdn.poehali.dev/projects/3bfa20a6-8a11-4065-ae49-bb1b42cdfbc7/bucket/b4d866ca-11e7-46b0-aa6e-66063d2f4f06.png";
+
 const TILE_CLOSED = "https://cdn.poehali.dev/projects/3bfa20a6-8a11-4065-ae49-bb1b42cdfbc7/files/76e9eecd-9807-46df-a330-0593875fe81c.jpg";
 const TILE_OPEN   = "https://cdn.poehali.dev/projects/3bfa20a6-8a11-4065-ae49-bb1b42cdfbc7/files/dd4af6a7-57b0-4205-ac11-b7be62ac61ac.jpg";
 const WALL_CLOSED = "https://cdn.poehali.dev/projects/3bfa20a6-8a11-4065-ae49-bb1b42cdfbc7/files/c6fb3dc1-dc40-4aee-af2a-29c0ec9fc63d.jpg";
@@ -293,6 +295,7 @@ export default function Index() {
           </div>
 
           {/* 3. ЛЮКОВЫЙ БЛОК — появляется в центре после зума */}
+          {/* Крышка откидывается ВВЕРХ (petли сверху), как на фото */}
           <div
             className="absolute inset-0 flex items-center justify-center z-20 pointer-events-none"
             style={{
@@ -300,53 +303,138 @@ export default function Index() {
               transform: `scale(${0.25 + hatchAppear * 0.75})`,
             }}
           >
-            <div style={{ width: 300, height: 400, position: "relative", perspective: 1100 }}>
+            {/* Внешний perspective-контейнер */}
+            <div style={{ width: 320, height: 420, position: "relative", perspective: 1200 }}>
 
-              {/* Рама люка */}
+              {/* ── НИША — то, что открывается за крышкой ── */}
+              <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 1 }}>
+                {/* Реальное фото открытого люка */}
+                <img
+                  src={HATCH_OPEN_PHOTO}
+                  alt="открытый люк"
+                  style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%" }}
+                />
+                {/* Затемнение ниши */}
+                <div className="absolute inset-0" style={{
+                  background: "linear-gradient(to bottom, rgba(8,6,5,0.65) 0%, rgba(8,6,5,0.25) 60%)",
+                }} />
+                {/* Свечение изнутри по мере открытия */}
+                <div className="absolute inset-0" style={{
+                  background: `radial-gradient(ellipse at 50% 80%, ${hatch.color}22 0%, transparent 65%)`,
+                  opacity: doorAngle > 20 ? doorAngle / 88 : 0,
+                  transition: "opacity 0.3s",
+                }} />
+              </div>
+
+              {/* Рама/борт ниши — видна всегда */}
               <div className="absolute inset-0" style={{
-                border: `3px solid ${hatch.color}`,
-                boxShadow: `0 0 0 1px rgba(0,0,0,0.95), 0 0 70px ${hatch.color}30`,
-                zIndex: 4,
+                border: `4px solid #5a5248`,
+                boxShadow: `inset 0 0 0 1px rgba(0,0,0,0.9), 0 0 60px rgba(0,0,0,0.8), 0 0 30px ${hatch.color}18`,
+                zIndex: 5,
+                pointerEvents: "none",
               }} />
 
-              {/* Вид за люком (openImg) */}
-              <div className="absolute inset-0 overflow-hidden" style={{ zIndex: 1 }}>
-                <img src={hatch.openImg} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0" style={{ background: "rgba(10,8,7,0.52)" }} />
-                <div className="absolute inset-0" style={{
-                  background: `radial-gradient(ellipse at 35% 50%, ${hatch.color}28 0%, transparent 65%)`,
-                  opacity: doorAngle > 10 ? 1 : 0,
-                  transition: "opacity 0.4s",
-                }} />
-              </div>
-
-              {/* Дверца — откидывается влево */}
+              {/* ── КРЫШКА — откидывается вверх от верхнего края ── */}
               <div
-                className="absolute inset-0 overflow-hidden"
                 style={{
-                  transformOrigin: "left center",
-                  transform: `perspective(1100px) rotateY(${-doorAngle}deg)`,
+                  position: "absolute",
+                  inset: 0,
+                  transformOrigin: "center top",
+                  transform: `perspective(1200px) rotateX(${doorAngle}deg)`,
                   backfaceVisibility: "hidden",
-                  zIndex: 3,
+                  zIndex: 4,
+                  overflow: "hidden",
                 }}
               >
-                <img src={hatch.closedImg} alt="" className="w-full h-full object-cover" />
-                <div className="absolute inset-0" style={{
-                  background: `linear-gradient(to right, transparent 50%, rgba(0,0,0,${0.7 * (doorAngle / 88)}) 100%)`,
+                {/* Поверхность крышки — текстура плитки/стены */}
+                <img src={hatch.closedImg} alt="" style={{
+                  width: "100%", height: "100%", objectFit: "cover", display: "block",
                 }} />
-                {/* Петля */}
-                <div className="absolute left-0 top-0 bottom-0" style={{
-                  width: 5,
-                  background: `linear-gradient(to bottom, ${hatch.color}80, ${hatch.color}, ${hatch.color}80)`,
+
+                {/* Затемнение снизу крышки при подъёме */}
+                <div className="absolute inset-0" style={{
+                  background: `linear-gradient(to top, rgba(0,0,0,${0.75 * (doorAngle / 88)}) 0%, transparent 60%)`,
+                }} />
+
+                {/* Блик на крышке */}
+                <div className="absolute inset-0" style={{
+                  background: `linear-gradient(135deg, rgba(255,255,255,${0.04 + 0.06 * (doorAngle / 88)}) 0%, transparent 50%)`,
+                }} />
+
+                {/* Петли сверху — 2 штуки как на фото */}
+                {[22, 78].map((leftPct) => (
+                  <div key={leftPct} style={{
+                    position: "absolute",
+                    top: 0,
+                    left: `${leftPct}%`,
+                    transform: "translateX(-50%)",
+                    width: 14,
+                    height: 10,
+                    background: "#8a8078",
+                    boxShadow: "0 2px 6px rgba(0,0,0,0.7)",
+                    borderRadius: "0 0 3px 3px",
+                  }} />
+                ))}
+
+                {/* Торцевая грань крышки (глубина) — видна при подъёме */}
+                <div style={{
+                  position: "absolute",
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  height: `${Math.min(28, doorAngle * 0.32)}px`,
+                  background: "linear-gradient(to bottom, #3a3530, #252220)",
+                  transformOrigin: "bottom center",
+                  opacity: doorAngle > 5 ? 1 : 0,
                 }} />
               </div>
 
-              {/* Тень от открытой дверцы */}
-              {doorAngle > 3 && (
-                <div className="absolute top-0 bottom-0 left-0 pointer-events-none" style={{
-                  zIndex: 5,
-                  width: `${Math.min(72, doorAngle * 0.82)}%`,
-                  background: "linear-gradient(to right, rgba(0,0,0,0.55) 0%, transparent 100%)",
+              {/* ── ГАЗОВЫЕ ЛИФТЫ (доводчики) — появляются при открытии ── */}
+              {doorAngle > 15 && (
+                <>
+                  {[72, 228].map((liftX) => {
+                    const t = doorAngle / 88;
+                    // лифт: нижний конец в нише, верхний — в крышке
+                    const topY   = 10 + t * 30;           // верхнее крепление уходит вверх
+                    const botY   = 85 - t * 5;            // нижнее крепление
+                    const angle  = -25 + t * 15;          // наклон стержня
+                    return (
+                      <svg
+                        key={liftX}
+                        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 6, overflow: "visible" }}
+                        viewBox="0 0 320 420"
+                        preserveAspectRatio="none"
+                      >
+                        {/* Стержень */}
+                        <line
+                          x1={liftX} y1={`${topY}%`}
+                          x2={liftX + Math.sin(angle * Math.PI / 180) * 30}
+                          y2={`${botY}%`}
+                          stroke="#9a9088" strokeWidth="5" strokeLinecap="round"
+                        />
+                        {/* Крепление верхнее */}
+                        <circle cx={liftX} cy={`${topY}%`} r="5" fill="#7a7068" />
+                        {/* Крепление нижнее */}
+                        <circle
+                          cx={liftX + Math.sin(angle * Math.PI / 180) * 30}
+                          cy={`${botY}%`}
+                          r="5" fill="#7a7068"
+                        />
+                      </svg>
+                    );
+                  })}
+                </>
+              )}
+
+              {/* Тень под открытой крышкой — падает вниз в нишу */}
+              {doorAngle > 5 && (
+                <div style={{
+                  position: "absolute",
+                  top: 0, left: 0, right: 0,
+                  height: `${Math.min(55, doorAngle * 0.62)}%`,
+                  background: "linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 100%)",
+                  zIndex: 3,
+                  pointerEvents: "none",
                 }} />
               )}
             </div>
